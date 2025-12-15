@@ -1,5 +1,5 @@
 import torch
-
+from typing import Tuple, Optional
 
 def cartesian_to_spherical(points_xyz: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
     """Convert Cartesian (x, y, z) to Spherical (r, theta, phi).
@@ -39,7 +39,7 @@ def normalize_spherical(
     theta: torch.Tensor,
     phi: torch.Tensor,
     r_max: float = 80.0,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Scale spherical coordinates to approximately [0, 1]."""
     r_n = r / max(r_max, 1e-6)
     theta_n = theta / torch.pi                      # [0, pi] -> [0, 1]
@@ -62,7 +62,7 @@ def cartesian_to_spherical_with_norm(
 
 def spherical_fusion(
     points_xyz: torch.Tensor,
-    others: torch.Tensor | None = None,
+    others: Optional[torch.Tensor] = None,
     fuse_mode: str = 'concat',
     use_normalize: bool = True,
     r_max: float = 80.0,

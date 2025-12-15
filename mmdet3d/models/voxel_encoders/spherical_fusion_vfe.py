@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from mmdet3d.models import VOXEL_ENCODERS
-from mmdet3d.utils import spherical_fusion
+from mmdet3d.models.utils import spherical_fusion
 
 
 @VOXEL_ENCODERS.register_module()
@@ -47,9 +47,12 @@ class SphericalFusionVFE(nn.Module):
             self.out_channels = 3
 
     def forward(self,
-                features: torch.Tensor,
-                num_points: torch.Tensor,
+                voxels: torch.Tensor,
                 coors: torch.Tensor,
+                pts=None,
+                img_feats=None,
+                img_metas=None,
+                num_points: torch.Tensor = None,
                 **kwargs) -> torch.Tensor:
         """Forward pass.
 
@@ -62,6 +65,20 @@ class SphericalFusionVFE(nn.Module):
             voxel_features: (M, C_out)
         """
         # 1) Separate xyz and others
+        features = voxels 
+        
+        if features.dim() == 2:
+            features = features.unsqueeze(1)  # (M, 1, C)
+        
+        # If num_points is not provided, infer from voxels (padding=0)
+        if num_points is None:
+            # Common case: points padded with 0s for fixed T
+            # Treat points with all xyz=0 as "empty points"
+            with torch.no_grad():
+                valid = (features[..., 0:3].abs().sum(dim=-1) > 0)  # (M, T) boolean
+                num_points = valid.sum(dim=1)  # (M,)
+        # coors used as-is (not used in current logic)
+        
         xyz = features[..., 0:3]
         others = features[..., 3:] if self.in_channels > 3 else None
 
@@ -80,4 +97,4 @@ class SphericalFusionVFE(nn.Module):
         num_points_clamped = torch.clamp_min(num_points, 1.0)
         voxel_out = points_sum / num_points_clamped
 
-        return voxel_out
+        return voxel_out, coors
