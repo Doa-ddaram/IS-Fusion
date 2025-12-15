@@ -37,15 +37,15 @@ model = dict(
         num_heads=[3, 6, 12, 24],
         window_size=7,
         mlp_ratio=4,
-        qkv_bias=True,
-        qk_scale=None,
+        # qkv_bias=True,
+        # qk_scale=None,
         drop_rate=0.0,
-        attn_drop_rate=0.0,
+        # attn_drop_rate=0.0,
         drop_path_rate=0.2,
         patch_norm=True,
         out_indices=[1, 2, 3],
         with_cp=False,
-        convert_weights=False,
+        # convert_weights=False,
     ),
     img_neck=dict(
         type='GeneralizedLSSFPN',
@@ -349,8 +349,8 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=6,
+    samples_per_gpu=2,
+    workers_per_gpu=1,
     train=dict(
         type='CBGSDataset',
         # type='SimpleDataset',
@@ -419,14 +419,14 @@ checkpoint_config = dict(interval=1)
 log_config = dict(
     interval=50,
     hooks=[
-        dict(type='TextLoggerHook'),
-        dict(type='TensorboardLoggerHook')
+        dict(type='TextLoggerHook')
+        # dict(type='TensorboardLoggerHook')
     ])
 # yapf:enable
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = None
-load_from = 'data/pretrain_models/swint-nuimages-pretrained-e2e.pth'
+load_from = None
 resume_from = None
 workflow = [('train', 1)]
 gpu_ids = range(0, 8)
